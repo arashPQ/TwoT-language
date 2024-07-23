@@ -9,18 +9,23 @@ pub trait Node {
 #[derive(Debug)]
 pub enum StatementNode {
     Let(LetStatement),
+    Return(ReturnStatement),
+    Expression(ExpressionStatement)
 }
 
 impl Node for StatementNode {
     fn token_literal(&self) -> String {
         return match self {
             Self::Let(let_stmt) => let_stmt.token_literal(),
-            
+            Self::Return(return_stmt) => return_stmt.token_literal(),
+            Self::Expression(expression) => expression.token_literal(),
         };
     }
     fn print_string(&self) -> String {
         return match self {
             Self::Let(let_stmt) => let_stmt.print_string(),
+            Self::Return(return_stmt) => return_stmt.print_string(),
+            Self::Expression(expression) => expression.print_string(),
             
         };
     }
@@ -56,6 +61,8 @@ impl Node for Program {
         return if self.statements.len() > 0{
             match &self.statements[0] {
                 StatementNode::Let(let_stmt) => let_stmt.token_literal(),
+                StatementNode::Return(return_stmt) => return_stmt.token_literal(),
+                StatementNode::Expression(expression) => expression.token_literal(),
             }
         } else {
             String::from("")
@@ -114,5 +121,49 @@ impl Node for Identifier {
 
     fn print_string(&self) -> String {
         self.value.clone()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ReturnStatement {
+    pub token: Token,
+    pub return_value: Option<ExpressionNode>
+}
+
+impl Node for ReturnStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn print_string(&self) -> String {
+        let mut out = String::from("");
+
+        out.push_str(self.token_literal().as_str());
+        out.push_str(" ");
+
+        if let Some(return_value) = &self.return_value {
+            out.push_str(return_value.print_string().as_str());
+        }
+        out.push_str(";");
+
+        out
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ExpressionStatement {
+    pub token: Token,
+    pub expression: Option<ExpressionNode>,
+}
+
+impl Node for ExpressionStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn print_string(&self) -> String {
+        if let Some(expression) = &self.expression {
+            return expression.print_string();
+        }
+        String::from("")
+        
     }
 }
