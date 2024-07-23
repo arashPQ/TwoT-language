@@ -100,7 +100,7 @@ impl Node for LetStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 
 pub struct Identifier {
     pub token: Token,

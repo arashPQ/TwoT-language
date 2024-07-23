@@ -10,7 +10,7 @@ pub struct Token {
 pub enum TokenKind {
     #[default]
     Illegal,
-    Eof,
+    Eof,            // End of file
 
     Ident,
     Int,
@@ -25,8 +25,8 @@ pub enum TokenKind {
     Lt,
     Gt,
 
-    Eq,
-    NotEq,
+    Eq,             // Equal
+    NotEq,          // Not Equal
 
     Comma,
     Semicolon,
