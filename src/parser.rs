@@ -44,7 +44,7 @@ fn precedence_map(kind: &TokenKind) -> PrecedenceLevel {
 
 pub struct Parser {
     lexer: Lexer,
-    cur_token: Token,
+    current_token: Token,
     peek_token: Token,
     errors: Vec<String>,
     prefix_parse_fns: HashMap<TokenKind, PrefixParseFn>,
@@ -55,7 +55,7 @@ impl Parser {
     pub fn new(lexer: Lexer) -> Parser {
         let mut parser = Parser {
             lexer,
-            cur_token: Default::default(),
+            current_token: Default::default(),
             peek_token: Default::default(),
             errors: vec![],
             prefix_parse_fns: HashMap::new(),
@@ -94,24 +94,24 @@ impl Parser {
 
     fn parse_identifier(&mut self) -> Option<ExpressionNode> {
         Some(ExpressionNode::IdentifierNode(Identifier {
-            token: self.cur_token.clone(),
-            value: self.cur_token.literal.clone(),
+            token: self.current_token.clone(),
+            value: self.current_token.literal.clone(),
         }))
     }
 
     fn parse_integer_literal(&mut self) -> Option<ExpressionNode> {
         let mut literal = IntegerLiteral {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             value: Default::default(),
         };
 
-        return match self.cur_token.literal.parse::<i64>() {
+        return match self.current_token.literal.parse::<i64>() {
             Ok(value) => {
                 literal.value = value;
                 Some(ExpressionNode::Integer(literal))
             }
             Err(_) => {
-                let msg = format!("could not parse {} as integer", self.cur_token.literal);
+                let msg = format!("could not parse {} as integer", self.current_token.literal);
                 self.errors.push(msg);
                 None
             }
@@ -120,8 +120,8 @@ impl Parser {
 
     fn parse_prefix_expression(&mut self) -> Option<ExpressionNode> {
         let mut expression = PrefixExpression {
-            token: self.cur_token.clone(),
-            operator: self.cur_token.literal.clone(),
+            token: self.current_token.clone(),
+            operator: self.current_token.literal.clone(),
             right: Default::default(),
         };
         self.next_token();
@@ -135,8 +135,8 @@ impl Parser {
 
     fn parse_boolean(&mut self) -> Option<ExpressionNode> {
         Some(ExpressionNode::BooleanNode(Boolean {
-            token: self.cur_token.clone(),
-            value: self.cur_token_is(TokenKind::True),
+            token: self.current_token.clone(),
+            value: self.current_token_is(TokenKind::True),
         }))
     }
 
@@ -154,7 +154,7 @@ impl Parser {
 
     fn parse_if_expression(&mut self) -> Option<ExpressionNode> {
         let mut expression = IfExpression {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             alternative: None,
             condition: Default::default(),
             consequence: Default::default(),
@@ -195,7 +195,7 @@ impl Parser {
 
     fn parse_function_literal(&mut self) -> Option<ExpressionNode> {
         let mut literal = FunctionLiteral {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             body: Default::default(),
             parameters: vec![],
         };
@@ -219,14 +219,14 @@ impl Parser {
 
     fn parse_string_literal(&mut self) -> Option<ExpressionNode> {
         Some(ExpressionNode::StringExp(StringLiteral {
-            token: self.cur_token.clone(),
-            value: self.cur_token.literal.clone(),
+            token: self.current_token.clone(),
+            value: self.current_token.literal.clone(),
         }))
     }
 
     fn parse_array_literal(&mut self) -> Option<ExpressionNode> {
         let array = ArrayLiteral {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             elements: self.parse_expression_list(TokenKind::Rbracket),
         };
         Some(ExpressionNode::Array(array))
@@ -234,7 +234,7 @@ impl Parser {
 
     fn parse_hash_literal(&mut self) -> Option<ExpressionNode> {
         let mut hash = HashLiteral {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             pairs: Default::default(),
         };
 
@@ -278,8 +278,8 @@ impl Parser {
         self.next_token();
 
         let ident = Identifier {
-            token: self.cur_token.clone(),
-            value: self.cur_token.literal.clone(),
+            token: self.current_token.clone(),
+            value: self.current_token.literal.clone(),
         };
 
         identifiers.push(ident);
@@ -288,8 +288,8 @@ impl Parser {
             self.next_token();
             self.next_token();
             let ident = Identifier {
-                token: self.cur_token.clone(),
-                value: self.cur_token.literal.clone(),
+                token: self.current_token.clone(),
+                value: self.current_token.literal.clone(),
             };
             identifiers.push(ident);
         }
@@ -303,13 +303,13 @@ impl Parser {
 
     fn parse_block_statement(&mut self) -> BlockStatement {
         let mut block = BlockStatement {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             statements: vec![],
         };
 
         self.next_token();
 
-        while !self.cur_token_is(TokenKind::Rbrace) && !self.cur_token_is(TokenKind::Eof) {
+        while !self.current_token_is(TokenKind::Rbrace) && !self.current_token_is(TokenKind::Eof) {
             let stmt = self.parse_statement();
 
             if let Some(stmt) = stmt {
@@ -324,8 +324,8 @@ impl Parser {
     fn parse_infix_expression(&mut self, left: ExpressionNode) -> Option<ExpressionNode> {
         self.next_token();
         let mut expression = InfixExpression {
-            token: self.cur_token.clone(),
-            operator: self.cur_token.literal.clone(),
+            token: self.current_token.clone(),
+            operator: self.current_token.literal.clone(),
             left: Box::new(left),
             right: Default::default(),
         };
@@ -342,7 +342,7 @@ impl Parser {
     fn parse_call_expression(&mut self, function: ExpressionNode) -> Option<ExpressionNode> {
         self.next_token();
         let mut exp = CallExpression {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             function: Box::new(function),
             arguments: vec![],
         };
@@ -355,7 +355,7 @@ impl Parser {
     fn parse_index_expression(&mut self, left: ExpressionNode) -> Option<ExpressionNode> {
         self.next_token();
         let mut exp = IndexExpression {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             left: Box::new(left),
             index: Default::default(),
         };
@@ -405,14 +405,14 @@ impl Parser {
     }
 
     fn next_token(&mut self) {
-        self.cur_token = self.peek_token.clone();
+        self.current_token = self.peek_token.clone();
         self.peek_token = self.lexer.next_token();
     }
 
     pub fn parse_program(&mut self) -> Option<Program> {
         let mut program = Program { statements: vec![] };
 
-        while !self.cur_token_is(TokenKind::Eof) {
+        while !self.current_token_is(TokenKind::Eof) {
             if let Some(statement) = self.parse_statement() {
                 program.statements.push(statement);
             }
@@ -423,7 +423,7 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Option<StatementNode> {
-        match self.cur_token.kind {
+        match self.current_token.kind {
             TokenKind::Let => self.parse_let_statement(),
             TokenKind::Return => self.parse_return_statement(),
             _ => self.parse_expression_statement(),
@@ -432,7 +432,7 @@ impl Parser {
 
     fn parse_expression_statement(&mut self) -> Option<StatementNode> {
         let stmt = ExpressionStatement {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             expression: self.parse_expression(PrecedenceLevel::Lowest),
         };
 
@@ -445,7 +445,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self, precedence_level: PrecedenceLevel) -> Option<ExpressionNode> {
-        let prefix = self.prefix_parse_fns.get(&self.cur_token.kind);
+        let prefix = self.prefix_parse_fns.get(&self.current_token.kind);
         if let Some(prefix_fn) = prefix {
             let mut left_exp = prefix_fn(self);
 
@@ -459,7 +459,7 @@ impl Parser {
             }
             return left_exp;
         }
-        self.no_prefix_parse_fn_error(self.cur_token.kind.clone());
+        self.no_prefix_parse_fn_error(self.current_token.kind.clone());
         None
     }
 
@@ -470,7 +470,7 @@ impl Parser {
 
     fn parse_let_statement(&mut self) -> Option<StatementNode> {
         let mut stmt = LetStatement {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             name: Default::default(),
             value: Default::default(),
         };
@@ -479,8 +479,8 @@ impl Parser {
             None
         } else {
             stmt.name = Identifier {
-                token: self.cur_token.clone(),
-                value: self.cur_token.literal.clone(),
+                token: self.current_token.clone(),
+                value: self.current_token.literal.clone(),
             };
 
             if !self.expect_peek(TokenKind::Assign) {
@@ -498,7 +498,7 @@ impl Parser {
 
     fn parse_return_statement(&mut self) -> Option<StatementNode> {
         let mut stmt = ReturnStatement {
-            token: self.cur_token.clone(),
+            token: self.current_token.clone(),
             ret_value: Default::default(),
         };
         self.next_token();
@@ -525,8 +525,8 @@ impl Parser {
         self.peek_token.kind == token_kind
     }
 
-    fn cur_token_is(&self, token_kind: TokenKind) -> bool {
-        self.cur_token.kind == token_kind
+    fn current_token_is(&self, token_kind: TokenKind) -> bool {
+        self.current_token.kind == token_kind
     }
 
     pub fn errors(&self) -> &Vec<String> {
@@ -554,7 +554,7 @@ impl Parser {
     }
 
     fn cur_precedence(&self) -> PrecedenceLevel {
-        precedence_map(&self.cur_token.kind)
+        precedence_map(&self.current_token.kind)
     }
 }
 
