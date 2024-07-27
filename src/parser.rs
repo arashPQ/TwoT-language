@@ -573,7 +573,7 @@ mod test {
     #[test]
     fn test_let_statements() {
         let tests: Vec<(&str, &str, Box<dyn any::Any>)> = vec![
-            ("let x = 5;", "x", Box::new(5)),
+            ("let x = 8443;", "x", Box::new(8443)),
             ("let y = true;", "y", Box::new(true)),
             ("let foobar = y;", "foobar", Box::new("y")),
         ];
@@ -611,9 +611,9 @@ mod test {
     #[test]
     fn test_return_statements() {
         let tests: Vec<(&str, Box<dyn any::Any>)> = vec![
-            ("return 5;", Box::new(5)),
-            ("return 10;", Box::new(10)),
-            ("return 993322;", Box::new(993322)),
+            ("return 8443;", Box::new(8443)),
+            ("return 1383;", Box::new(1383)),
+            ("return 20240727;", Box::new(20240727)),
         ];
 
         for test in tests {
@@ -745,8 +745,8 @@ mod test {
     #[test]
     fn test_parsing_prefix_expressions() {
         let prefix_tests: Vec<(&str, &str, Box<dyn any::Any>)> = vec![
-            ("!5", "!", Box::new(5)),
-            ("-15", "-", Box::new(15)),
+            ("!25", "!", Box::new(25)),
+            ("-5", "-", Box::new(5)),
             ("!true", "!", Box::new(true)),
             ("!false", "!", Box::new(false)),
         ];
@@ -791,16 +791,16 @@ mod test {
     }
 
     #[test]
-    fn test_parsing_infix_expressions() {
+    fn test_parsing_infix_expressions() {               //          Comparsion and Arithmetic Operators
         let infix_tests: Vec<(&str, Box<dyn any::Any>, &str, Box<dyn any::Any>)> = vec![
-            ("5 + 5;", Box::new(5), "+", Box::new(5)),
-            ("5 - 5;", Box::new(5), "-", Box::new(5)),
-            ("5 * 5;", Box::new(5), "*", Box::new(5)),
-            ("5 / 5;", Box::new(5), "/", Box::new(5)),
-            ("5 > 5;", Box::new(5), ">", Box::new(5)),
-            ("5 < 5;", Box::new(5), "<", Box::new(5)),
-            ("5 == 5;", Box::new(5), "==", Box::new(5)),
-            ("5 != 5;", Box::new(5), "!=", Box::new(5)),
+            ("1382 + 1382;", Box::new(1382), "+", Box::new(1382)),
+            ("1383 - 1383;", Box::new(1383), "-", Box::new(1383)),
+            ("8443 * 8443;", Box::new(8443), "*", Box::new(8443)),
+            ("1382 / 1382;", Box::new(1382), "/", Box::new(1382)),
+            ("1382 > 1382;", Box::new(1382), ">", Box::new(1382)),
+            ("1382 < 1382;", Box::new(1382), "<", Box::new(1382)),
+            ("7871 == 7871;", Box::new(7871), "==", Box::new(7871)),
+            ("1382 != 1382;", Box::new(1382), "!=", Box::new(1382)),
             ("true == true", Box::new(true), "==", Box::new(true)),
             ("true != false", Box::new(true), "!=", Box::new(false)),
             ("false == false", Box::new(false), "==", Box::new(false)),
@@ -841,7 +841,7 @@ mod test {
     }
 
     #[test]
-    fn test_operator_precedence_parsing() {
+    fn test_operator_precedence_parsing() {                 //     Set Mathmatic Rules
         let tests = vec![
             ("-a * b", "((-a) * b)"),
             ("!-a", "(!(-a))"),

@@ -1,10 +1,11 @@
 use std::io::{Stdin, Stdout, Write};
 
-use crate::{lexer::Lexer, token::TokenKind};
+use crate::{evaluator::Evaluator, lexer::Lexer, parser::Parser};
 
 pub fn start(stdin: Stdin, mut stdout: Stdout) {
+    let evaluator = Evaluator::new();
     loop {
-        write!(stdout, "==> ").expect("should have written prompt string >>");
+        write!(stdout, "==> ").expect("should have written prompt string ==>");
         stdout.flush().expect("should have flushed stdout!");
 
         let mut input = String::new();
@@ -14,19 +15,34 @@ pub fn start(stdin: Stdin, mut stdout: Stdout) {
             return;
         }
 
-        let mut lexer = Lexer::new(input.as_str());
+        let lexer = Lexer::new(input.as_str());
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program().expect("error parsing program");
 
-
-        loop {
-            let token = lexer.next_token();
-            if token.kind == TokenKind::Eof {
-                break;
-            }
-            writeln!(stdout, "{token:?}").expect("token should have been written !!")
+        if parser.errors().len() != 0 {
+            print_parse_errors(&stdout, parser.errors());
+            continue;
         }
 
+        let evaluated = evaluator.eval_program(program);
 
-        writeln!(stdout).expect("parsed program should be written to stdout");
+        writeln!(stdout, "{evaluated}").expect("parsed program should be written to stdout");
     }
 }
 
+fn print_parse_errors(mut stdout: &Stdout, errors: &Vec<String>) {
+    writeln!(
+        stdout,
+        "
+     /\\_/\\
+    ( o.o )
+    > ^ <
+"
+    )
+    .unwrap();
+    writeln!(stdout, "Oops! We ran into parser errors")
+        .expect("error message info should be written to stdout");
+    for error in errors {
+        writeln!(stdout, "\t-> {error}").expect("error should be written to stdout");
+    }
+}
