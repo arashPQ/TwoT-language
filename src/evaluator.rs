@@ -42,6 +42,12 @@ impl Evaluator{
                     let right = self.eval_expression(Some(*prefix_exp.right));
                     return Self::eval_prefix_expression(prefix_exp.operator, right);
                 }
+                ExpressionNode::Infix(infix_exp) => {
+                    let left = self.eval_expression(Some(*infix_exp.left));
+                    let right = self.eval_expression(Some(*infix_exp.right));
+
+                    return Self::eval_infix_expression(infix_exp.operator, &left, &right);
+                }
                 _ => Object::Null
             };
         }
@@ -53,6 +59,25 @@ impl Evaluator{
             "!" => Self::eval_bang_operator_expression(right),
             "-" => Self::eval_minu_prefix_operator_expression(right),
             _ => NULL,
+        }
+    }
+
+    fn eval_infix_expression(operator: String, left: &Object, right: &Object) -> Object {
+        match (left, right, operator) {
+            (Object::Integer(left), Object::Integer(right), op) => {
+                Self::eval_integer_infix_expression(op, *left, *right)
+            }
+            _ => NULL
+        }
+    }
+
+    fn eval_integer_infix_expression(operator: String, left: i64, right: i64) -> Object {
+        match operator.as_str() {
+            "+" => Object::Integer(left + right),
+            "-" => Object::Integer(left - right),
+            "*" => Object::Integer(left * right),
+            "/" => Object::Integer(left / right),
+            _ => NULL
         }
     }
 
@@ -92,7 +117,21 @@ mod test {
 
     #[test]
     fn test_evaluation_integer_expression(){
-        let tests = vec![("5", 5), ("10", 10), ("-5", -5), ("-10", -10)];
+        let tests = vec![
+            ("5", 5),
+            ("10", 10),
+            ("-5", -5),
+            ("-10", -10),
+            ("5 + 5 + 5 + 5 - 10", 10),
+            ("3 * 3 * 3 * 3 * 3", 243),
+            ("-132 + 264 + -132", 0),
+            ("8 * 4 + 8", 40),
+            ("36 / 3 * 3 + 14", 50),
+            ("3 * (15 + 5)", 60),
+            ("4 * 4 * 4 + 16", 80),
+            ("8 + 4 * 2", 16),
+            ("8 * (4 + 2)", 48),
+            ("(8 + 4 * 2 + 20 / 5) * 2 + -20", 20)];
 
         for test in tests {
             let evaluated = test_eval(test.0);

@@ -12,5 +12,6 @@ pub mod token;
 
 fn main() {
     println!("\n Hello, You are using the TwoT language!! \n");
+    println!("\n This language Developed by arash paghe :))) \n");
     start(io::stdin(), io::stdout());
 }
