@@ -3,7 +3,7 @@ use std::io::{Stdin, Stdout, Write};
 use crate::{evaluator::Evaluator, lexer::Lexer, parser::Parser};
 
 pub fn start(stdin: Stdin, mut stdout: Stdout) {
-    let evaluator = Evaluator::new();
+    let mut evaluator = Evaluator::new();
     loop {
         write!(stdout, "==> ").expect("should have written prompt string ==>");
         stdout.flush().expect("should have flushed stdout!");
@@ -34,15 +34,17 @@ fn print_parse_errors(mut stdout: &Stdout, errors: &Vec<String>) {
     writeln!(
         stdout,
         "
-     /\\_/\\
-    ( o.o )
-    > ^ <
+     ####### #######
+        #       #
+        #       #
+        #       #
+        #       #
 "
     )
     .unwrap();
     writeln!(stdout, "Oops! We ran into parser errors")
         .expect("error message info should be written to stdout");
     for error in errors {
-        writeln!(stdout, "\t-> {error}").expect("error should be written to stdout");
+        writeln!(stdout, "\t=> {error}").expect("error should be written to stdout");
     }
 }

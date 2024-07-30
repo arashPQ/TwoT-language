@@ -499,11 +499,11 @@ impl Parser {
     fn parse_return_statement(&mut self) -> Option<StatementNode> {
         let mut stmt = ReturnStatement {
             token: self.current_token.clone(),
-            ret_value: Default::default(),
+            return_value: Default::default(),
         };
         self.next_token();
 
-        stmt.ret_value = self.parse_expression(PrecedenceLevel::Lowest);
+        stmt.return_value = self.parse_expression(PrecedenceLevel::Lowest);
 
         if self.peek_token_is(TokenKind::Semicolon) {
             self.next_token();
@@ -642,7 +642,7 @@ mod test {
                     );
                     test_literal_expression(
                         ret_stmt
-                            .ret_value
+                            .return_value
                             .as_ref()
                             .expect("error parsing value of let statement"),
                         test.1,

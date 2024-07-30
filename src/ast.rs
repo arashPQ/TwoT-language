@@ -166,7 +166,7 @@ impl Node for Identifier {
 #[derive(Debug, Default, Clone)]
 pub struct ReturnStatement {
     pub token: Token,
-    pub ret_value: Option<ExpressionNode>,
+    pub return_value: Option<ExpressionNode>,
 }
 
 impl Node for ReturnStatement {
@@ -180,8 +180,8 @@ impl Node for ReturnStatement {
         out.push_str(self.token_literal().as_str());
         out.push_str(" ");
 
-        if let Some(ret_value) = &self.ret_value {
-            out.push_str(ret_value.print_string().as_str());
+        if let Some(return_value) = &self.return_value {
+            out.push_str(return_value.print_string().as_str());
         }
 
         out.push_str(";");
