@@ -1,5 +1,7 @@
 use std::{collections::HashMap, fmt::Display};
 
+use crate::ast::{BlockStatement, Identifier, Node};
+
 #[derive(Debug, Clone)]
 //      Add types in our programming language
 pub enum Object {
@@ -7,6 +9,8 @@ pub enum Object {
     Boolean(bool),
     ReturnValue(Box<Object>),
     Error(String),
+    Function(Function),
+    StringObject(String),
     Null,
 }
 
@@ -17,6 +21,8 @@ impl Object {
             Self::Boolean(_) => String::from("BOOLEAN"),
             Self::ReturnValue(_) => String::from("RETURN_VALUE"),
             Self::Error(_) => String::from("ERROR"),
+            Self::Function(_) => String::from("FUNCTION"),
+            Self::StringObject(_) => String::from("STRING"),
             Self::Null => String::from("NULL"),
         }
     }
@@ -29,13 +35,31 @@ impl Display for Object {
             Self::Boolean(bool) => write!(f, "{}", bool),
             Self::ReturnValue(return_value) => write!(f, "{}", *return_value),
             Self::Error(error) => write!(f, "ERROR: {}", error),
+            Self::Function(function) => {
+                let mut out = String::from("");
+                let mut parameters = vec![];
+
+                for parameter in &function.parameters {
+                    parameters.push(parameter.print_string());
+                }
+
+                out.push_str("function");
+                out.push_str("(");
+                out.push_str(parameters.join(", ").as_str());
+                out.push_str(") { \n");
+                out.push_str(function.body.print_string().as_str());
+                out.push_str("}\n");
+
+                write!(f, "{}", out)
+            }
+            Self::StringObject(string) => write!(f, "{}", string),
             Self::Null => write!(f, "null"),
         
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Environment {
     pub store: HashMap<String, Object>,
     pub outer: Option<Box<Environment>>,
@@ -48,12 +72,26 @@ impl Environment {
             outer: None
         }
     }
+
+    pub fn new_enclosed_evironment(outer: Box<Environment>) -> Environment {
+
+        let environment_map = HashMap::new();
+        Environment {
+            store: environment_map,
+            outer: Some(outer),
+        }
+    }
+
+
     pub fn get(&self, name: String) -> Option<Object> {
         match self.store.get(name.as_str()) {
             Some(object) => Some(object.clone()),
             None => match &self.outer {
                 Some(environment) => environment.get(name),
-                None => None,
+                None => match &self.outer {
+                    Some(environment) => environment.get(name),
+                    None => None
+                },
             },
         }
     }
@@ -61,4 +99,16 @@ impl Environment {
         self.store.insert(name.clone(), value);
         return self.get(name);
     }
+}
+
+
+#[derive(Debug, Clone)]
+pub struct Function {
+    pub parameters: Vec<Identifier>,
+    pub body: BlockStatement,
+    pub environment: Environment,
+}
+
+impl Function {
+
 }

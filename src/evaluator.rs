@@ -1,6 +1,8 @@
+use std::ops::Deref;
+
 use crate::
-{ast::{BlockStatement, ExpressionNode, IfExpression, Program, StatementNode, Identifier}, 
-object::{Object, Environment}};
+{ast::{BlockStatement, ExpressionNode, Identifier, IfExpression, Program, StatementNode}, 
+object::{Environment, Function, Object}};
 
 const TRUE: Object = Object::Boolean(true);
 const FALSE: Object = Object::Boolean(false);
@@ -44,12 +46,12 @@ impl Evaluator{
                 }
                 return Object::ReturnValue(Box::new(value));
             }
-            StatementNode::Let(let_stmt) => {
-                let value = self.eval_expression(let_stmt.value);
+            StatementNode::Say(say_stmt) => {
+                let value = self.eval_expression(say_stmt.value);
                 if Self::is_error(&value) {
                     return value;
                 }
-                self.environment.set(let_stmt.name.value, value).unwrap()
+                self.environment.set(say_stmt.name.value, value).unwrap()
             }
             _ => Object::Null,
         }
@@ -84,10 +86,78 @@ impl Evaluator{
                 }
                 ExpressionNode::IfExpressionNode(if_exp) => self.eval_if_expression(if_exp),
                 ExpressionNode::IdentifierNode(identifier) => self.eval_identifier(identifier),
+                ExpressionNode::Function(function_literal) => Object::Function(Function{
+                    parameters: function_literal.parameters,
+                    body: function_literal.body,
+                    environment: self.environment.clone(),
+                }),
+
+                ExpressionNode::Call(call_exp) => {
+                    let function = self.eval_expression(Some(call_exp.function.deref().clone()));
+
+                    if Self::is_error(&function) {
+                        return function;
+                    }
+                    let arguments = self.eval_expressions(call_exp.arguments);
+                
+                    if arguments.len() == 1 && Self::is_error(&arguments[0]) {
+                        return arguments[0].clone();
+                    }
+
+                    self.apply_function(function, arguments)
+                }
+                ExpressionNode::StringExp(string_literal) =>
+                    Object::StringObject(string_literal.value),
                 _ => Object::Null
             };
         }
         Object::Null
+    }
+
+    fn apply_function (&mut self, function: Object, arguments: Vec<Object>) -> Object {
+        match function {
+            Object::Function(function) => {
+                let old_environment = self.environment.clone();
+                let extended_environment = self.extended_function_environment(function.clone(), arguments);
+                self.environment = extended_environment;
+                let evaluated = self.eval_block_statement(function.body);
+                self.environment = old_environment;
+                
+                return Self::unwarp_return_value(evaluated);
+            
+            }
+            other => Object::Error(format!("not a function: {}", other.object_type()))
+        }
+    }
+
+    fn extended_function_environment(&self, function: Function, arguments: Vec<Object>) -> Environment {
+        let mut environment = Environment::new_enclosed_evironment(Box::new(function.environment));
+
+        for (idx, parameter) in function.parameters.into_iter().enumerate() {
+            environment.set(parameter.value, arguments[idx].clone());
+        }
+
+        environment
+    }
+
+    fn unwarp_return_value(object: Object) -> Object {
+        match object {
+            Object::ReturnValue(ret) => *ret ,
+            _ => object
+        }
+    }
+
+    fn eval_expressions(&mut self, expression: Vec<ExpressionNode>) -> Vec<Object> {
+        let mut result = vec![];
+
+        for exp in expression {
+            let evaluated = self.eval_expression(Some(exp));
+            if Self::is_error(&evaluated) {
+                return vec![evaluated];
+            }
+            result.push(evaluated);
+        }
+        result
     }
 
     fn eval_prefix_expression(operator: String, right: Object) -> Object {
@@ -115,7 +185,22 @@ impl Evaluator{
             (Object::Integer(left), Object::Integer(right), op) => {
                 Self::eval_integer_infix_expression(op, *left, *right)
             }
-            (Object::Boolean(l), Object::Boolean(r), operator) => {
+            (Object::StringObject(left_string), Object::StringObject(right_string), operator) => {
+                return match operator.as_str() {
+                    "+" => 
+                        Object::StringObject(format!("{}{}", left_string, right_string)),
+                    _ => Object::Error(format!(
+                        "unknown operator: {} {} {}",
+                        left.object_type(),
+                        operator,
+                        right.object_type()
+                    )),
+                    
+                };
+            }   
+                    
+            
+            (Object::Boolean(l), Object::Boolean(r), operator) => {         // l: left, r: right
                 return match operator.as_str() {
                     "==" =>Self::native_bool_to_boolean_object(l == r),
                     "!=" =>Self::native_bool_to_boolean_object(l != r),
@@ -225,7 +310,11 @@ impl Evaluator{
 #[cfg(test)]
 
 mod test {
-    use crate::{lexer::Lexer, object::Object, parser::Parser};
+    use crate::
+        {lexer::Lexer,
+        object::Object,
+        parser::Parser,
+        ast::Node};
 
     use super::Evaluator;
 
@@ -255,12 +344,12 @@ mod test {
     }
 
     #[test]
-    fn test_let_statements() {
+    fn test_say_statements() {
         let tests = vec![
-            ("let a = 12; a;", 12),
-            ("let a = 12 * 5; a;", 60),
-            ("let a = 12; let b = a; b;", 12),
-            ("let a = 12; let b = a; let c = a + b + 12; c;", 36),
+            ("say a = 12; a;", 12),
+            ("say a = 12 * 5; a;", 60),
+            ("say a = 12; say b = a; b;", 12),
+            ("say a = 12; say b = a; say c = a + b + 12; c;", 36),
         ];
 
         for test in tests {
@@ -273,9 +362,9 @@ mod test {
         let tests = vec![
             ("true", true),
             ("false", false),
-            ("1 > 2", false),
             ("1 < 2", true),
-            ("1 > 5", false),
+            ("1 > 2", false),
+            ("1 > 2", false),
             ("1 > 1", false),
             ("1 == 1", true),
             ("1 != 1", false),
@@ -370,14 +459,15 @@ mod test {
                 ",
                 "unknown operator: BOOLEAN + BOOLEAN",
             ),
-            ("foobar", "identifier not found: foobar"),
+            ("foobar", "Identifier not found: foobar"),
+            (r#""Hello" - "World""#, "unknown operator: STRING - STRING"),
         ];
 
         for test in tests {
             let evaluated = test_eval(test.0);
             match evaluated {
-                Object::Error(error) => assert_eq!(error, test.1),
-                other => panic!("No error object returned, got={:?}", other)
+                Object::Error(err) => assert_eq!(err, test.1),
+                other => panic!("no error object returned. got={:?}", other),
             }
         }
     }
@@ -425,6 +515,107 @@ mod test {
                 int, expected
             ),
             other => panic!("Object is not Integer, got={:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_closures() {
+        let input = r#"
+        say newAdder = function(x) {
+            function(y) {x + y};
+        };
+
+        say addTwo = newAdder(25);
+        addTwo(25);
+        "#;
+
+        test_integer_object(test_eval(input), 50);
+    }
+
+    #[test]
+    fn test_function_object() {
+        let input = "function(x) {x + 23}";
+        let evaluated = test_eval(input);
+
+        match evaluated {
+            Object::Function(function) => {
+                assert_eq!(function.parameters.len(),
+                1,
+                "function has wrong parameters length, got={}",
+                function.parameters.len()
+                );
+                assert_eq!(
+                    function.parameters[0].print_string(),
+                    "x",
+                    "parameter is not 'x', got={}",
+                    function.parameters[0].print_string()
+                );
+                assert_eq!(
+                    function.body.print_string(),
+                    "(x + 23)",
+                    "body is not '(x + 23)', got={}",
+                    function.body.print_string()
+                );
+            }
+            other => panic!("Entered Object is not function, got={}", other)
+        }
+    }
+
+    #[test]
+    fn test_function_application() {
+        let tests = vec![
+            ("say identity = function(x) { x; }; identity(5);", 5),
+            ("say identity = function(x) { return x; }; identity(5);", 5),
+            ("say double = function(x) { x * 2; }; double(5);", 10),
+            ("say add = function(x, y) { x + y; }; add(5, 5);", 10),
+            ("say add = function(x, y) { x+ y; }; add(5 + 5, add(5, 5));", 20),
+            ("function(x) { x; }(5)", 5),
+        ];
+
+        for test in tests {
+            test_integer_object(test_eval(test.0), test.1);
+        }
+    }
+
+
+    #[test]
+    fn test_string_literal() {
+        let input = r#""hello world!!""#;
+        let evaluated = test_eval(input);
+
+        match evaluated {
+            Object::StringObject(string) => {
+                assert_eq!(
+                    string,
+                    "hello world!!",
+                    "string has wrong value, got={}",
+                    string
+                );
+            }
+
+            other => panic!("Entered object is not string: got={:?}", other)
+        }
+    }
+
+    #[test]
+    fn test_string_concatenation() {
+        let input = r#"
+        
+            "Hello" + " " + "World!!"
+        
+        "#;
+        let evaluated = test_eval(input);
+        match evaluated {
+            Object::StringObject(string) => assert_eq!(
+                string,
+                "Hello World!!",
+                "string has wrong value, got={}",
+                string
+            ),
+            other => panic!(
+                "Entered object is not string, got={:?}",
+                other
+            )
         }
     }
 }

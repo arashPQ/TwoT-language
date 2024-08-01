@@ -7,7 +7,7 @@ pub trait Node {
 
 #[derive(Debug, Clone)]
 pub enum StatementNode {
-    Let(LetStatement),
+    Say(SayStatement),
     Return(ReturnStatement),
     Expression(ExpressionStatement),
     Block(BlockStatement),
@@ -16,7 +16,7 @@ pub enum StatementNode {
 impl Node for StatementNode {
     fn token_literal(&self) -> String {
         return match self {
-            Self::Let(let_stmt) => let_stmt.token_literal(),
+            Self::Say(say_stmt) => say_stmt.token_literal(),
             Self::Return(ret_stmt) => ret_stmt.token_literal(),
             Self::Expression(expression) => expression.token_literal(),
             Self::Block(block_stmt) => block_stmt.token_literal(),
@@ -25,7 +25,7 @@ impl Node for StatementNode {
 
     fn print_string(&self) -> String {
         return match self {
-            Self::Let(let_stmt) => let_stmt.print_string(),
+            Self::Say(say_stmt) => say_stmt.print_string(),
             Self::Return(ret_stmt) => ret_stmt.print_string(),
             Self::Expression(expression) => expression.print_string(),
             Self::Block(block_stmt) => block_stmt.print_string(),
@@ -97,7 +97,7 @@ impl Node for Program {
     fn token_literal(&self) -> String {
         return if self.statements.len() > 0 {
             match &self.statements[0] {
-                StatementNode::Let(let_stmt) => let_stmt.token_literal(),
+                StatementNode::Say(say_stmt) => say_stmt.token_literal(),
                 StatementNode::Return(ret_stmt) => ret_stmt.token_literal(),
                 StatementNode::Expression(expression) => expression.token_literal(),
                 StatementNode::Block(block_stmt) => block_stmt.token_literal(),
@@ -119,13 +119,13 @@ impl Node for Program {
 }
 
 #[derive(Debug, Clone)]
-pub struct LetStatement {
+pub struct SayStatement {
     pub token: Token,
     pub name: Identifier,
     pub value: Option<ExpressionNode>,
 }
 
-impl Node for LetStatement {
+impl Node for SayStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }
@@ -418,7 +418,7 @@ impl Node for StringLiteral {
 
 #[derive(Debug, Clone)]
 pub struct ArrayLiteral {
-    pub token: Token, //[
+    pub token: Token, 
     pub elements: Vec<ExpressionNode>,
 }
 
@@ -502,36 +502,36 @@ mod test {
         token::{Token, TokenKind},
     };
 
-    use super::{ExpressionNode, Identifier, LetStatement, Program, StatementNode};
+    use super::{ExpressionNode, Identifier, SayStatement, Program, StatementNode};
 
     #[test]
     fn test_print_string() {
         let program = Program {
-            statements: vec![StatementNode::Let(LetStatement {
+            statements: vec![StatementNode::Say(SayStatement {
                 token: Token {
-                    kind: TokenKind::Let,
-                    literal: String::from("let"),
+                    kind: TokenKind::Say,
+                    literal: String::from("say"),
                 },
                 name: Identifier {
                     token: Token {
                         kind: TokenKind::Ident,
-                        literal: String::from("myVar"),
+                        literal: String::from("myName"),
                     },
-                    value: String::from("myVar"),
+                    value: String::from("myName"),
                 },
                 value: Some(ExpressionNode::IdentifierNode(Identifier {
                     token: Token {
                         kind: TokenKind::Ident,
-                        literal: String::from("anotherVar"),
+                        literal: String::from("anotherName"),
                     },
-                    value: String::from("anotherVar"),
+                    value: String::from("anotherName"),
                 })),
             })],
         };
 
         assert_eq!(
             program.print_string(),
-            String::from("let myVar = anotherVar;"),
+            String::from("say myName = anotherName;"),
             "print string wrong. got = {}",
             program.print_string()
         );

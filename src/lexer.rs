@@ -171,14 +171,14 @@ mod test {
     #[test]
     fn test_next_token() {
         let input = r#"
-        let five = 5;
-        let ten = 10;
+        say five = 5;
+        say ten = 10;
 
-        let add = fn(x, y) {
+        say add = function(x, y) {
             x + y;
         };
 
-        let result = add(five, ten);
+        say result = add(five, ten);
         !-/*5;
         5 < 10 > 5;
 
@@ -198,8 +198,8 @@ mod test {
 
         let expected: Vec<Token> = vec![
             Token {
-                kind: TokenKind::Let,
-                literal: "let".to_string(),
+                kind: TokenKind::Say,
+                literal: "say".to_string(),
             },
             Token {
                 kind: TokenKind::Ident,
@@ -218,8 +218,8 @@ mod test {
                 literal: ";".to_string(),
             },
             Token {
-                kind: TokenKind::Let,
-                literal: "let".to_string(),
+                kind: TokenKind::Say,
+                literal: "say".to_string(),
             },
             Token {
                 kind: TokenKind::Ident,
@@ -238,8 +238,8 @@ mod test {
                 literal: ";".to_string(),
             },
             Token {
-                kind: TokenKind::Let,
-                literal: "let".to_string(),
+                kind: TokenKind::Say,
+                literal: "say".to_string(),
             },
             Token {
                 kind: TokenKind::Ident,
@@ -251,7 +251,7 @@ mod test {
             },
             Token {
                 kind: TokenKind::Function,
-                literal: "fn".to_string(),
+                literal: "function".to_string(),
             },
             Token {
                 kind: TokenKind::Lparen,
@@ -302,8 +302,8 @@ mod test {
                 literal: ";".to_string(),
             },
             Token {
-                kind: TokenKind::Let,
-                literal: "let".to_string(),
+                kind: TokenKind::Say,
+                literal: "say".to_string(),
             },
             Token {
                 kind: TokenKind::Ident,

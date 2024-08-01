@@ -4,7 +4,7 @@ use crate::{
     ast::{
         ArrayLiteral, BlockStatement, Boolean, CallExpression, ExpressionNode, ExpressionStatement,
         FunctionLiteral, HashLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
-        IntegerLiteral, LetStatement, PrefixExpression, Program, ReturnStatement, StatementNode,
+        IntegerLiteral, SayStatement, PrefixExpression, Program, ReturnStatement, StatementNode,
         StringLiteral,
     },
     lexer::Lexer,
@@ -424,7 +424,7 @@ impl Parser {
 
     fn parse_statement(&mut self) -> Option<StatementNode> {
         match self.current_token.kind {
-            TokenKind::Let => self.parse_let_statement(),
+            TokenKind::Say => self.parse_say_statement(),
             TokenKind::Return => self.parse_return_statement(),
             _ => self.parse_expression_statement(),
         }
@@ -468,8 +468,8 @@ impl Parser {
         self.errors.push(msg)
     }
 
-    fn parse_let_statement(&mut self) -> Option<StatementNode> {
-        let mut stmt = LetStatement {
+    fn parse_say_statement(&mut self) -> Option<StatementNode> {
+        let mut stmt = SayStatement {
             token: self.current_token.clone(),
             name: Default::default(),
             value: Default::default(),
@@ -491,7 +491,7 @@ impl Parser {
                 if self.peek_token_is(TokenKind::Semicolon) {
                     self.next_token();
                 }
-                Some(StatementNode::Let(stmt))
+                Some(StatementNode::Say(stmt))
             }
         };
     }
@@ -571,11 +571,11 @@ mod test {
     use super::Parser;
 
     #[test]
-    fn test_let_statements() {
+    fn test_say_statements() {
         let tests: Vec<(&str, &str, Box<dyn any::Any>)> = vec![
-            ("let x = 8443;", "x", Box::new(8443)),
-            ("let y = true;", "y", Box::new(true)),
-            ("let foobar = y;", "foobar", Box::new("y")),
+            ("say x = 8443;", "x", Box::new(8443)),
+            ("say y = true;", "y", Box::new(true)),
+            ("say foobar = y;", "foobar", Box::new("y")),
         ];
 
         for test in tests {
@@ -593,17 +593,17 @@ mod test {
             );
 
             let stmt = &program.statements[0];
-            test_let_statement(stmt, test.1);
+            test_say_statement(stmt, test.1);
 
             match stmt {
-                StatementNode::Let(let_stmt) => test_literal_expression(
-                    let_stmt
+                StatementNode::Say(say_stmt) => test_literal_expression(
+                    say_stmt
                         .value
                         .as_ref()
                         .expect("error parsing value of let statement"),
                     test.2,
                 ),
-                other => panic!("expected LetStatement. got={:?}", other),
+                other => panic!("expected SayStatement. got={:?}", other),
             }
         }
     }
@@ -1079,7 +1079,7 @@ mod test {
 
     #[test]
     fn test_function_literal_parsing() {
-        let input = "fn(x, y) { x + y; }";
+        let input = "function(x, y) { x + y; }";
 
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
@@ -1155,9 +1155,9 @@ mod test {
     #[test]
     fn test_function_parameter_parsing() {
         let tests = vec![
-            ("fn() {};", vec![]),
-            ("fn(x) {};", vec!["x"]),
-            ("fn(x, y, z) {};", vec!["x", "y", "z"]),
+            ("function() {};", vec![]),
+            ("function(x) {};", vec!["x"]),
+            ("function(x, y, z) {};", vec!["x", "y", "z"]),
         ];
 
         for test in tests {
@@ -1484,26 +1484,26 @@ mod test {
         test_infix_expression(exp, Box::new(left), operator.to_string(), Box::new(right));
     }
 
-    fn test_let_statement(stmt: &StatementNode, expected: &str) {
+    fn test_say_statement(stmt: &StatementNode, expected: &str) {
         assert_eq!(
             stmt.token_literal(),
-            "let",
-            "token literal not `let`. got={}",
+            "say",
+            "token literal not `say`. got={}",
             stmt.token_literal()
         );
         match stmt {
-            StatementNode::Let(let_stmt) => {
+            StatementNode::Say(say_stmt) => {
                 assert_eq!(
-                    let_stmt.name.value, expected,
-                    "LetStatement name value not {}. got {}",
-                    expected, let_stmt.name.value
+                    say_stmt.name.value, expected,
+                    "SayStatement name value not {}. got {}",
+                    expected, say_stmt.name.value
                 );
                 assert_eq!(
-                    let_stmt.name.token_literal(),
+                    say_stmt.name.token_literal(),
                     expected,
-                    "LetStatement name value not {}. got {}",
+                    "SayStatement name value not {}. got {}",
                     expected,
-                    let_stmt.name.token_literal()
+                    say_stmt.name.token_literal()
                 );
             }
             other => panic!("not a Let Statement. got={:?}", other),

@@ -40,7 +40,7 @@ pub enum TokenKind {
     Rbracket,
 
     Function,
-    Let,
+    Say,            // call variable's name like let, const, var in another language's
     True,
     False,
     If,
@@ -65,7 +65,7 @@ impl Display for TokenKind {
             TokenKind::Lbrace => write!(f, "{{"),
             TokenKind::Rbrace => write!(f, "}}"),
             TokenKind::Function => write!(f, "Function"),
-            TokenKind::Let => write!(f, "Let"),
+            TokenKind::Say => write!(f, "Say"),
             TokenKind::Minus => write!(f, "-"),
             TokenKind::Slash => write!(f, "/"),
             TokenKind::Bang => write!(f, "!"),
@@ -89,8 +89,8 @@ impl Display for TokenKind {
 
 pub fn lookup_ident(identifier: &String) -> TokenKind {
     match identifier.as_str() {
-        "fn" => TokenKind::Function,
-        "let" => TokenKind::Let,
+        "function" => TokenKind::Function,
+        "say" => TokenKind::Say,
         "true" => TokenKind::True,
         "false" => TokenKind::False,
         "if" => TokenKind::If,

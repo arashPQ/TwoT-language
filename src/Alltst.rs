@@ -251,7 +251,7 @@ mod test {
             },
             Token {
                 kind: TokenKind::Function,
-                literal: "fn".to_string(),
+                literal: "functionn".to_string(),
             },
             Token {
                 kind: TokenKind::Lparen,
