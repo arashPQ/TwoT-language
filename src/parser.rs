@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     ast::{
         ArrayLiteral, BlockStatement, Boolean, CallExpression, ExpressionNode, ExpressionStatement,
-        FunctionLiteral, HashLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
+        FunctionLiteral, DictLiteral, Identifier, IfExpression, IndexExpression, InfixExpression,
         IntegerLiteral, SayStatement, PrefixExpression, Program, ReturnStatement, StatementNode,
         StringLiteral,
     },
@@ -73,7 +73,7 @@ impl Parser {
         parser.register_prefix(TokenKind::Function, Self::parse_function_literal);
         parser.register_prefix(TokenKind::String, Self::parse_string_literal);
         parser.register_prefix(TokenKind::Lbracket, Self::parse_array_literal);
-        parser.register_prefix(TokenKind::Lbrace, Self::parse_hash_literal);
+        parser.register_prefix(TokenKind::Lbrace, Self::parse_dictionary_literal);
 
         parser.register_infix(TokenKind::Plus, Self::parse_infix_expression);
         parser.register_infix(TokenKind::Minus, Self::parse_infix_expression);
@@ -232,8 +232,8 @@ impl Parser {
         Some(ExpressionNode::Array(array))
     }
 
-    fn parse_hash_literal(&mut self) -> Option<ExpressionNode> {
-        let mut hash = HashLiteral {
+    fn parse_dictionary_literal(&mut self) -> Option<ExpressionNode> {
+        let mut dictionary = DictLiteral {
             token: self.current_token.clone(),
             pairs: Default::default(),
         };
@@ -253,7 +253,7 @@ impl Parser {
             let value = self
                 .parse_expression(PrecedenceLevel::Lowest)
                 .expect("error parsing value expression");
-            hash.pairs.push((key, value));
+            dictionary.pairs.push((key, value));
 
             if !self.peek_token_is(TokenKind::Rbrace) && !self.expect_peek(TokenKind::Comma) {
                 return None;
@@ -264,7 +264,7 @@ impl Parser {
             return None;
         }
 
-        Some(ExpressionNode::Hash(hash))
+        Some(ExpressionNode::Dictionary(dictionary))
     }
 
     fn parse_function_parameters(&mut self) -> Option<Vec<Identifier>> {
@@ -321,6 +321,8 @@ impl Parser {
         block
     }
 
+    
+
     fn parse_infix_expression(&mut self, left: ExpressionNode) -> Option<ExpressionNode> {
         self.next_token();
         let mut expression = InfixExpression {
@@ -375,15 +377,15 @@ impl Parser {
     }
 
     fn parse_expression_list(&mut self, end: TokenKind) -> Vec<ExpressionNode> {
-        let mut args = vec![];
+        let mut arguments = vec![];
 
         if self.peek_token_is(end.clone()) {
             self.next_token();
-            return args;
+            return arguments;
         }
 
         self.next_token();
-        args.push(
+        arguments.push(
             self.parse_expression(PrecedenceLevel::Lowest)
                 .expect("error parsing arguments"),
         );
@@ -391,7 +393,7 @@ impl Parser {
         while self.peek_token_is(TokenKind::Comma) {
             self.next_token();
             self.next_token();
-            args.push(
+            arguments.push(
                 self.parse_expression(PrecedenceLevel::Lowest)
                     .expect("error parsing arguments"),
             )
@@ -401,7 +403,7 @@ impl Parser {
             return vec![];
         }
 
-        args
+        arguments
     }
 
     fn next_token(&mut self) {
@@ -535,7 +537,7 @@ impl Parser {
 
     fn peek_error(&mut self, token_kind: TokenKind) {
         let msg = format!(
-            "expected next token to be {}, got {} instead",
+            "expected next token to be {}, got={} instead",
             token_kind, self.peek_token.kind
         );
         self.errors.push(msg);
@@ -1181,13 +1183,13 @@ mod test {
                             for (idx, ident) in test.1.into_iter().enumerate() {
                                 assert_eq!(
                                     fn_lit.parameters[idx].value, ident,
-                                    "expected {}, got {}",
+                                    "expected {}, got={}",
                                     ident, fn_lit.parameters[idx].value
                                 );
                                 assert_eq!(
                                     fn_lit.parameters[idx].token_literal(),
                                     ident,
-                                    "expected {}, got {}",
+                                    "expected {}, got={}",
                                     ident,
                                     fn_lit.parameters[idx].token_literal()
                                 );
@@ -1280,7 +1282,7 @@ mod test {
 
     #[test]
     fn test_parsing_array_literal() {
-        let input = "[1, 2 * 2, 3 + 3]";
+        let input = "[0, 2 * 2, 3 * 3]";
 
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
@@ -1301,7 +1303,7 @@ mod test {
                             "Length of array literal elements not 3. got={}",
                             array_literal.elements.len()
                         );
-                        test_integer_literal(&array_literal.elements[0], 1);
+                        test_integer_literal(&array_literal.elements[0], 0);
                         test_infix_expression(
                             &array_literal.elements[1],
                             Box::new(2),
@@ -1311,7 +1313,7 @@ mod test {
                         test_infix_expression(
                             &array_literal.elements[2],
                             Box::new(3),
-                            String::from("+"),
+                            String::from("*"),
                             Box::new(3),
                         );
                     }
@@ -1355,7 +1357,7 @@ mod test {
     }
 
     #[test]
-    fn test_parsing_hash_literals_string_keys() {
+    fn test_parsing_dictionary_literals_string_keys() {
         let input = r#"{"one": 1, "two": 2, "three": 3}"#;
 
         let lexer = Lexer::new(input);
@@ -1370,12 +1372,12 @@ mod test {
                     .as_ref()
                     .expect("error parsing expression")
                 {
-                    ExpressionNode::Hash(hash) => {
+                    ExpressionNode::Dictionary(dictionary) => {
                         assert_eq!(
-                            hash.pairs.len(),
+                            dictionary.pairs.len(),
                             3,
-                            "hash pairs has wrong length. got={}",
-                            hash.pairs.len()
+                            "dictionary pairs has wrong length. got={}",
+                            dictionary.pairs.len()
                         );
 
                         let expected = vec![
@@ -1386,13 +1388,13 @@ mod test {
 
                         let mut curr_idx: usize = 0;
 
-                        for (_, value) in &hash.pairs {
+                        for (_, value) in &dictionary.pairs {
                             let expected_value = expected[curr_idx].1;
                             test_integer_literal(value, expected_value);
                             curr_idx += 1;
                         }
                     }
-                    other => panic!("not an hash literal. got={:?}", other),
+                    other => panic!("not an dictionary literal. got={:?}", other),
                 }
             }
             other => panic!("not an expression statement. got={:?}", other),
@@ -1400,7 +1402,7 @@ mod test {
     }
 
     #[test]
-    fn test_parsing_empty_hash_literal() {
+    fn test_parsing_empty_dictionary_literal() {
         let input = "{}";
 
         let lexer = Lexer::new(input);
@@ -1415,15 +1417,15 @@ mod test {
                     .as_ref()
                     .expect("error parsing expression")
                 {
-                    ExpressionNode::Hash(hash) => {
+                    ExpressionNode::Dictionary(dictionary) => {
                         assert_eq!(
-                            hash.pairs.len(),
+                            dictionary.pairs.len(),
                             0,
-                            "hash pairs has wrong length. got={}",
-                            hash.pairs.len()
+                            "dictionary pairs has wrong length. got={}",
+                            dictionary.pairs.len()
                         );
                     }
-                    other => panic!("not an hash literal. got={:?}", other),
+                    other => panic!("not an dictionary literal. got={:?}", other),
                 }
             }
             other => panic!("not an expression statement. got={:?}", other),
@@ -1446,12 +1448,12 @@ mod test {
                     .as_ref()
                     .expect("error parsing expression")
                 {
-                    ExpressionNode::Hash(hash) => {
+                    ExpressionNode::Dictionary(dictionary) => {
                         assert_eq!(
-                            hash.pairs.len(),
+                            dictionary.pairs.len(),
                             3,
-                            "hash pairs has wrong length. got={}",
-                            hash.pairs.len()
+                            "dictionary pairs has wrong length. got={}",
+                            dictionary.pairs.len()
                         );
 
                         let expected = vec![
@@ -1462,7 +1464,7 @@ mod test {
 
                         let mut curr_idx: usize = 0;
 
-                        for (_, value) in &hash.pairs {
+                        for (_, value) in &dictionary.pairs {
                             let expected_value = &expected[curr_idx];
                             test_func_for_key(
                                 value,
@@ -1495,13 +1497,13 @@ mod test {
             StatementNode::Say(say_stmt) => {
                 assert_eq!(
                     say_stmt.name.value, expected,
-                    "SayStatement name value not {}. got {}",
+                    "SayStatement name value not {}. got={}",
                     expected, say_stmt.name.value
                 );
                 assert_eq!(
                     say_stmt.name.token_literal(),
                     expected,
-                    "SayStatement name value not {}. got {}",
+                    "SayStatement name value not {}. got={}",
                     expected,
                     say_stmt.name.token_literal()
                 );

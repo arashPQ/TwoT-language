@@ -36,8 +36,8 @@ pub enum TokenKind {
     Rparen,
     Lbrace,
     Rbrace,
-    Lbracket,
-    Rbracket,
+    Lbracket,        // Left Bracket
+    Rbracket,        // Right Bracket
 
     Function,
     Say,            // call variable's name like let, const, var in another language's

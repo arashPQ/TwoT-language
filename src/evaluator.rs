@@ -1,12 +1,11 @@
-use std::ops::Deref;
+use std::{collections::HashMap, ops::Deref};
 
 use crate::
-{ast::{BlockStatement, ExpressionNode, Identifier, IfExpression, Program, StatementNode}, 
-object::{Environment, Function, Object}};
+{ast::{BlockStatement, ExpressionNode, Identifier, IfExpression, Program, StatementNode}, object::{DictPair, DictStruct, Dictado, Environment, Function, Object}};
 
 const TRUE: Object = Object::Boolean(true);
 const FALSE: Object = Object::Boolean(false);
-const NULL: Object = Object::Null;
+pub const NULL: Object = Object::Null;
 
 
 pub struct Evaluator{
@@ -106,12 +105,112 @@ impl Evaluator{
 
                     self.apply_function(function, arguments)
                 }
-                ExpressionNode::StringExp(string_literal) =>
-                    Object::StringObject(string_literal.value),
+                ExpressionNode::StringExp(string_literal) => {
+                    Object::StringObject(string_literal.value)
+                }
+                ExpressionNode::Array(array_literal) => {
+                    let elements = self.eval_expressions(array_literal.elements);
+                    if elements.len() == 1 && Self::is_error(&elements[0]) {
+                        return elements[0].clone();
+                    }
+                    Object::Array(elements)
+                }
+
+                ExpressionNode::Index(index_exp) => {
+                    let left = self.eval_expression(Some(*index_exp.left));
+                    if Self::is_error(&left) {
+                        return left;
+                    }
+
+                    let index = self.eval_expression(Some(*index_exp.index));
+                    if Self::is_error(&index) {
+                        return index;
+                    }
+
+                    self.eval_index_expression(left, index)
+                }
+
+                ExpressionNode::Dictionary(dictionary) => {
+                    let mut pairs = HashMap::new();
+
+                    for(k, v) in dictionary.pairs {
+                        let key = self.eval_expression(Some(k));
+                        if Self::is_error(&key) {
+                            return key;
+                        }
+
+                        let dict_key = match key.dict_key() {
+                            Ok(dictionary) => dictionary,
+                            Err(err) => {
+                                return Object::Error(err.to_string());
+                            }
+                        };
+
+                        let value = self.eval_expression(Some(v));
+                        if Self::is_error(&value) {
+                            return value;
+                        }
+                        pairs.insert(dict_key, DictPair{key, value});
+                    }
+
+                    Object::DictObject(DictStruct {pairs})
+                }
                 _ => Object::Null
             };
         }
         Object::Null
+    }
+
+    fn eval_index_expression(&mut self, left: Object, index: Object) -> Object {
+        if left.object_type() == "ARRAY" && index.object_type() == "INTEGER" {
+            return Self::eval_array_index_expression(left, index);
+        }
+
+        if left.object_type() == "DICTIONARY" {
+            return Self::eval_hash_index_expression(left, index);
+        }
+
+        Object::Error(format!(
+            "index operator not supported: {}",
+            left.object_type()
+        ))
+    }
+
+    fn eval_array_index_expression(array: Object, index: Object) -> Object {
+        if let Object::Array(array) = array {
+            if let Object::Integer(idx) = index {
+                let max = (array.len() - 1) as i64;
+
+                if idx < 0 || idx > max {
+                    return NULL;
+                }
+                return array[(idx) as usize].clone();
+            }
+        }
+        NULL
+    }
+
+    fn eval_hash_index_expression(hash: Object, index: Object) -> Object {
+        match hash {
+            Object::DictObject(hash) => {
+                let key = match index.dict_key() {
+                    Ok(key) => key,
+                    Err(e) => {
+                        return Object::Error(format!("{}", e));
+                    }
+                };
+
+                let pair = match hash.pairs.get(&key) {
+                    Some(pair) => pair,
+                    None => {
+                        return NULL;
+                    }
+                };
+
+                return pair.value.clone();
+            }
+            _ => panic!("sorry!! \n cannot happen")
+        }
     }
 
     fn apply_function (&mut self, function: Object, arguments: Vec<Object>) -> Object {
@@ -126,6 +225,9 @@ impl Evaluator{
                 return Self::unwarp_return_value(evaluated);
             
             }
+            Object::Builtin(builtin_functions) => builtin_functions(arguments),
+
+
             other => Object::Error(format!("not a function: {}", other.object_type()))
         }
     }
@@ -310,13 +412,15 @@ impl Evaluator{
 #[cfg(test)]
 
 mod test {
+    use std::any;
+
     use crate::
         {lexer::Lexer,
-        object::Object,
+        object::{Dictado, Object},
         parser::Parser,
         ast::Node};
 
-    use super::Evaluator;
+    use super::{Evaluator, FALSE, NULL, TRUE};
 
 
     #[test]
@@ -461,6 +565,11 @@ mod test {
             ),
             ("foobar", "Identifier not found: foobar"),
             (r#""Hello" - "World""#, "unknown operator: STRING - STRING"),
+
+            (
+                r#"{"name": "TwoT"}[function(x) { x }];"#,
+                "unusable as Dictionary key: FUNCTION",
+            ),
         ];
 
         for test in tests {
@@ -616,6 +725,163 @@ mod test {
                 "Entered object is not string, got={:?}",
                 other
             )
+        }
+    }
+
+
+    #[test]
+    fn test_array_literal() {
+        let input = "[0, 2 * 2, 2003 + 2004]";
+        let evaluated = test_eval(input);
+
+        match evaluated {
+            Object::Array(elements) => {
+                assert_eq!(
+                    elements.len(),
+                    3,
+                    "array has wrong num of elements. got={}",
+                    elements.len()
+                );
+                test_integer_object(elements[0].clone(), 0);
+                test_integer_object(elements[1].clone(), 4);
+                test_integer_object(elements[2].clone(), 4007);
+            }
+            other => panic!("object is not array, got={:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_array_index_expressions() {
+        let tests: Vec<(&str, Box<dyn any::Any>)> = vec![
+            ("[1, 2, 3][0]", Box::new(1_i64)),
+            ("[1, 2, 3][1]", Box::new(2_i64)),
+            ("[1, 2, 3][2]", Box::new(3_i64)),
+            ("say i = 0; [1][i];", Box::new(1_i64)),
+            ("[1, 2, 3][1 + 1];", Box::new(3_i64)),
+            ("say Array = [1, 2, 3]; Array[2];", Box::new(3_i64)),
+            (
+                "say Array = [1, 2, 3]; Array[0] + Array[1] + Array[2];",
+                Box::new(6_i64),
+            ),
+            (
+                "say Array = [1, 2, 3]; say i = Array[0]; Array[i]",
+                Box::new(2_i64),
+            ),
+            ("[1, 2, 3][3]", Box::new(Object::Null)),
+            ("[1, 2, 3][-1]", Box::new(Object::Null)),
+        ];
+
+        for test in tests {
+            let evaluated = test_eval(test.0);
+            match test.1.downcast_ref::<i64>() {
+                Some(expected) => test_integer_object(evaluated, *expected),
+                None => test_null_object(evaluated),
+            }
+        }
+    }
+
+
+    #[test]
+    fn test_builtin_functions() {
+        let tests: Vec<(&str, Box<dyn any::Any>)> = vec![
+            (r#"len("")"#, Box::new(0_i64)),
+            (r#"len("four")"#, Box::new(4_i64)),
+            (r#"len("arash paghe")"#, Box::new(11_i64)),
+            (r#"len("hello world")"#, Box::new(11_i64)),
+            (
+                r#"len(1)"#,
+                Box::new(String::from("argument to 'len' not supported, got=INTEGER")),
+            ),
+            (
+                r#"len("one", "two")"#,
+                Box::new(String::from("wrong number of arguments. got=2, want=1")),
+            ),
+        ];
+
+        for test in tests {
+            let evaluated = test_eval(test.0);
+            match test.1.downcast_ref::<i64>() {
+                Some(expected) => test_integer_object(evaluated, *expected),
+                None => match test.1.downcast_ref::<String>() {
+                    Some(expected) => {
+                        match evaluated {
+                            Object::Error(err) => assert_eq!(err, *expected,
+                                "wrong error message. expected={}, got={}", *expected, err
+                            ),
+                            
+                            other => panic!("Entered object is not error. got={}", other),
+                        }
+                    },
+                    None => panic!("should not happen!!")
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_dictionary_literals() {
+        let input = r#"say two = "two";
+        {
+            "one": 10 - 9,
+            "two": 1 + 1,
+            "thr" + "ee": 6/2,
+            4: 4,
+            true: 5,
+            false: 6,
+        }"#;
+
+        let evaluated = test_eval(input);
+
+        match evaluated {
+            Object::DictObject(hash) => {
+                let expected = vec![
+                    (Object::StringObject("one".to_string()).dict_key(), 1),
+                    (Object::StringObject("two".to_string()).dict_key(), 2),
+                    (Object::StringObject("three".to_string()).dict_key(), 3),
+                    (Object::Integer(4).dict_key(), 4),
+                    (TRUE.dict_key(), 5),
+                    (FALSE.dict_key(), 6),
+                ];
+
+                assert_eq!(
+                    hash.pairs.len(),
+                    expected.len(),
+                    "dictionary object has wrong number of pairs. got={}, expected={}",
+                    hash.pairs.len(),
+                    expected.len()
+                );
+
+                for (expected_key, expected_value) in expected {
+                    let pair = match hash.pairs.get(expected_key.as_ref().unwrap()) {
+                        Some(pair) => pair,
+                        None => panic!("no pair for given key in pairs"),
+                    };
+                    test_integer_object(pair.value.clone(), expected_value);
+                }
+            }
+            other => panic!("eval did not return hash object, got={:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_hash_index_expressions() {
+        let tests: Vec<(&str, Box<dyn any::Any>)> = vec![
+            (r#"{"five": 5}["five"]"#, Box::new(5_i64)),
+            (r#"{"five": 5}["six"]"#, Box::new(NULL)),
+            (r#"say key = "five"; {"five": 5}[key]"#, Box::new(5_i64)),
+            (r#"{}["five"]"#, Box::new(NULL)),
+            (r#"{5: 5}[5]"#, Box::new(5_i64)),
+            (r#"{true: 5}[true]"#, Box::new(5_i64)),
+            (r#"{false: 5}[false]"#, Box::new(5_i64)),
+        ];
+
+        for test in tests {
+            let evaluated = test_eval(test.0);
+
+            match test.1.downcast_ref::<i64>() {
+                Some(expected) => test_integer_object(evaluated, *expected),
+                None => test_null_object(evaluated),
+            }
         }
     }
 }

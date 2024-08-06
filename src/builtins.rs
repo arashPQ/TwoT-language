@@ -1,135 +1,132 @@
+
 use crate::{evaluator::NULL, object::Object};
 
-pub struct Builtins;
+pub struct Builtin ;
 
-impl Builtins {
+impl Builtin {
     pub fn all_builtins(&self) -> Vec<(String, Object)> {
         vec![
-            (String::from("len"), Object::Builtin(b_len)),
-            (String::from("first"), Object::Builtin(b_first)),
-            (String::from("last"), Object::Builtin(b_last)),
-            (String::from("rest"), Object::Builtin(b_rest)),
-            (String::from("push"), Object::Builtin(b_push)),
-            (String::from("puts"), Object::Builtin(b_puts)),
-        ]
+            (String::from("len"), Object::Builtin(builtin_len)),
+            (String::from("first"), Object::Builtin(builtin_first)),
+            (String::from("last"), Object::Builtin(builtin_last)),
+            (String::from("last"), Object::Builtin(builtin_rest)),
+            (String::from("push"), Object::Builtin(builtin_push)),
+            (String::from("tellme"), Object::Builtin(builtin_tellme)),
+            
+            ]
     }
 }
 
-fn b_len(args: Vec<Object>) -> Object {
-    if args.len() != 1 {
+fn builtin_len(arguments: Vec<Object>) -> Object {
+    if arguments.len() != 1 {
         return Object::Error(format!(
             "wrong number of arguments. got={}, want=1",
-            args.len()
+            arguments.len()
         ));
     }
-    return match &args[0] {
-        Object::StringObj(string_literal) => Object::Integer(string_literal.len() as i64),
-        Object::Array(arr) => Object::Integer(arr.len() as i64),
+    return match &arguments[0] {
+        Object::StringObject(string_literal) => Object::Integer(string_literal.len() as i64),
+        Object::Array(array) => Object::Integer(array.len() as i64),
         other => Object::Error(format!(
-            "argument to 'len' not supported, got {}",
+            "argument to 'len' not supported, got={}",
             other.object_type()
-        )),
-    };
+        ))
+    }
 }
 
-fn b_first(args: Vec<Object>) -> Object {
-    if args.len() != 1 {
+fn builtin_first(arguments: Vec<Object>) -> Object {
+    if arguments.len() != 1 {
         return Object::Error(format!(
             "wrong number of arguments. got={}, want=1",
-            args.len()
+            arguments.len()
         ));
     }
 
-    if args[0].object_type() != "ARRAY" {
-        return Object::Error(format!(
-            "argument to `first` must be ARRAY, got={}",
-            args[0].object_type()
-        ));
+    if arguments[0].object_type() != "ARRAY" {
+        return Object::Error(format!("entered argument to 'first' must be array, got={}", arguments[0].object_type()));
     }
 
-    if let Object::Array(arr) = &args[0] {
-        if arr.len() > 0 {
-            return arr[0].clone();
+    if let Object::Array(array) = &arguments[0] {
+        if array.len() > 0 {
+            return array[0].clone();
         }
     }
     NULL
 }
 
-fn b_last(args: Vec<Object>) -> Object {
-    if args.len() != 1 {
+fn builtin_last(arguments: Vec<Object>) -> Object {
+    if arguments.len() != 1 {
         return Object::Error(format!(
             "wrong number of arguments. got={}, want=1",
-            args.len()
+            arguments.len()
         ));
     }
 
-    if args[0].object_type() != "ARRAY" {
-        return Object::Error(format!(
-            "argument to `first` must be ARRAY, got={}",
-            args[0].object_type()
-        ));
+    if arguments[0].object_type() != "ARRAY" {
+        return Object::Error(format!("entered argument to 'last' must be array, got={}", arguments[0].object_type()));
     }
 
-    if let Object::Array(arr) = &args[0] {
-        if arr.len() > 0 {
-            return arr[arr.len() - 1].clone();
+    if let Object::Array(array) = &arguments[0] {
+        if array.len() > 0 {
+            return array[array.len() - 1].clone();
         }
     }
     NULL
 }
 
-fn b_rest(args: Vec<Object>) -> Object {
-    if args.len() != 1 {
+fn builtin_rest(arguments: Vec<Object>) -> Object {
+    if arguments.len() != 1 {
         return Object::Error(format!(
             "wrong number of arguments. got={}, want=1",
-            args.len()
+            arguments.len()
         ));
     }
 
-    if args[0].object_type() != "ARRAY" {
+    if arguments[0].object_type() != "ARRAY" {
         return Object::Error(format!(
             "argument to `first` must be ARRAY, got={}",
-            args[0].object_type()
+            arguments[0].object_type()
         ));
     }
 
-    if let Object::Array(arr) = &args[0] {
-        if arr.len() > 0 {
-            let new_elements = arr[1..].to_vec();
+    if let Object::Array(array) = &arguments[0] {
+        if array.len() > 0 {
+            let new_elements = array[1..].to_vec();
             return Object::Array(new_elements);
         }
     }
     NULL
 }
 
-fn b_push(args: Vec<Object>) -> Object {
-    if args.len() != 2 {
+fn builtin_push(arguments: Vec<Object>) -> Object {
+    if arguments.len() != 2 {
         return Object::Error(format!(
             "wrong number of arguments. got={}, want=2",
-            args.len()
+            arguments.len()
         ));
     }
 
-    if args[0].object_type() != "ARRAY" {
+    if arguments[0].object_type() != "ARRAY" {
         return Object::Error(format!(
             "argument to `first` must be ARRAY, got={}",
-            args[0].object_type()
+            arguments[0].object_type()
         ));
     }
 
-    if let Object::Array(arr) = &args[0] {
-        if arr.len() > 0 {
-            let mut new_elements = arr.clone();
-            new_elements.push(args[1].clone());
+    if let Object::Array(array) = &arguments[0] {
+        if array.len() > 0 {
+            let mut new_elements = array.clone();
+            new_elements.push(arguments[1].clone());
             return Object::Array(new_elements);
         }
     }
     NULL
 }
 
-fn b_puts(args: Vec<Object>) -> Object {
-    for arg in args {
-        println!("{}", arg);
+fn builtin_tellme(arguments: Vec<Object>) -> Object {
+    for argument in arguments {
+        println!("{}", argument);
     }
     NULL
 }
+  

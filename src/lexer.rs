@@ -190,10 +190,10 @@ mod test {
 
         10 == 10;
         10 != 9;
-        "foobar"
-        "foo bar"
-        [1, 2];
-        {"foo": "bar"}
+        "jacksparrow"
+        "jack sparrow"
+        [2003, 2004];
+        {"creator": "arash"}
         "#;
 
         let expected: Vec<Token> = vec![
@@ -491,11 +491,11 @@ mod test {
             },
             Token {
                 kind: TokenKind::String,
-                literal: "foobar".to_string(),
+                literal: "jacksparrow".to_string(),
             },
             Token {
                 kind: TokenKind::String,
-                literal: "foo bar".to_string(),
+                literal: "jack sparrow".to_string(),
             },
             Token {
                 kind: TokenKind::Lbracket,
@@ -503,7 +503,7 @@ mod test {
             },
             Token {
                 kind: TokenKind::Int,
-                literal: "1".to_string(),
+                literal: "2003".to_string(),
             },
             Token {
                 kind: TokenKind::Comma,
@@ -511,7 +511,7 @@ mod test {
             },
             Token {
                 kind: TokenKind::Int,
-                literal: "2".to_string(),
+                literal: "2004".to_string(),
             },
             Token {
                 kind: TokenKind::Rbracket,
@@ -527,7 +527,7 @@ mod test {
             },
             Token {
                 kind: TokenKind::String,
-                literal: "foo".to_string(),
+                literal: "creator".to_string(),
             },
             Token {
                 kind: TokenKind::Colon,
@@ -535,7 +535,7 @@ mod test {
             },
             Token {
                 kind: TokenKind::String,
-                literal: "bar".to_string(),
+                literal: "arash".to_string(),
             },
             Token {
                 kind: TokenKind::Rbrace,

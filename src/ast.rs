@@ -48,7 +48,7 @@ pub enum ExpressionNode {
     StringExp(StringLiteral),
     Array(ArrayLiteral),
     Index(IndexExpression),
-    Hash(HashLiteral),
+    Dictionary(DictLiteral),
 }
 
 impl Node for ExpressionNode {
@@ -65,7 +65,7 @@ impl Node for ExpressionNode {
             Self::StringExp(string) => string.token_literal(),
             Self::Array(array) => array.token_literal(),
             Self::Index(index_exp) => index_exp.token_literal(),
-            Self::Hash(hash) => hash.token_literal(),
+            Self::Dictionary(dictionary) => dictionary.token_literal(),
             Self::None => String::from(""),
         };
     }
@@ -83,7 +83,7 @@ impl Node for ExpressionNode {
             Self::StringExp(string) => string.print_string(),
             Self::Array(array) => array.print_string(),
             Self::Index(index_exp) => index_exp.print_string(),
-            Self::Hash(hash) => hash.print_string(),
+            Self::Dictionary(dictionary) => dictionary.print_string(),
             Self::None => String::from(""),
         };
     }
@@ -363,15 +363,15 @@ impl Node for CallExpression {
 
     fn print_string(&self) -> String {
         let mut out = String::from("");
-        let mut args = vec![];
+        let mut arguments = vec![];
 
-        for arg in &self.arguments {
-            args.push(arg.print_string());
+        for argument in &self.arguments {
+            arguments.push(argument.print_string());
         }
 
         out.push_str(self.function.print_string().as_str());
         out.push_str("(");
-        out.push_str(args.join(", ").as_str());
+        out.push_str(arguments.join(", ").as_str());
         out.push_str(")");
 
         out
@@ -400,6 +400,8 @@ impl Node for BlockStatement {
     }
 }
 
+
+
 #[derive(Debug, Clone)]
 pub struct StringLiteral {
     pub token: Token,
@@ -418,7 +420,7 @@ impl Node for StringLiteral {
 
 #[derive(Debug, Clone)]
 pub struct ArrayLiteral {
-    pub token: Token, 
+    pub token: Token,       // [
     pub elements: Vec<ExpressionNode>,
 }
 
@@ -494,6 +496,35 @@ impl Node for HashLiteral {
         out
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct DictLiteral {        // Dictionary Literal   :))
+    pub token: Token,
+    pub pairs: Vec<(ExpressionNode, ExpressionNode)>,
+
+}
+
+impl Node for DictLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn print_string(&self) -> String {
+        let mut out = String::from("");
+        let mut pairs = vec![];
+
+        for (key, value) in &self.pairs {
+            pairs.push(format!("{}:{}", key.print_string(), value.print_string()))
+        }
+
+        out.push_str("{");
+        out.push_str(pairs.join(", ").as_str());
+        out.push_str("}");
+
+        out
+    }
+}
+
 
 #[cfg(test)]
 mod test {
