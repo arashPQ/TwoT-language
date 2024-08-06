@@ -1,8 +1,23 @@
 <h3>TwoT is A Basic interpreter written by Rust Language</h3>
 
-<h5>you can run source code with "cargo run" and</h5><br>
+<h5>you can run source code with "cargo run" and</h5>
 <h5>also you can run with "./target/debug/inter" in your command line</h5><br>
+<h2>Some Commands you can use in this interpreter: </h2>
+<h3>tellme();</h3>
+<h5>for print/output somthing</h5>
+<h5>Example: tellme("Hello World!!");</h5>
 
+<h3>say</h3>
+<h5>for declaring variables</h5>
+<h5>Example: say myname="TwoT language";<br>tellme(myname);</h5>
+
+<h3>function(){}</h3>
+<h5>for Definition of functions</h5>
+<h5>Example: funvtion(){<br>tellme("Hello World!!");<br>}</h5>
+
+<h3>also you can use dictionaries</h3>
+
+<h5>Example: say projects={"project1": "calculator", "project2": "TwoT language"};</h5>
 
 <h1 align="center">Hi 👋, I'm <a href="https://github.com/arashPQ" target="blank">
 arash</a></h1>
