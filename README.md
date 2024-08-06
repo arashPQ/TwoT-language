@@ -15,7 +15,7 @@
 <h5>for Definition of functions</h5>
 <h5>Example:<br> say fn = function(x){ x * 25 ;};<br>fn(4)<br>output: 100</h5>
 
-<h3>also you can use dictionaries</h3>
+<h3>also you can use Dictionaries</h3>
 
 <h5>Example: say projects={"project1": "calculator", "project2": "TwoT language"};<br>projects["project2"]<br>output: TwoT language</h5>
 
