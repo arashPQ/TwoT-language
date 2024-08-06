@@ -13,7 +13,7 @@
 
 <h3>function(){}</h3>
 <h5>for Definition of functions</h5>
-<h5>Example: funvtion(){<br>tellme("Hello World!!");<br>}</h5>
+<h5>Example: function(){<br>tellme("Hello World!!");<br>}</h5>
 
 <h3>also you can use dictionaries</h3>
 
