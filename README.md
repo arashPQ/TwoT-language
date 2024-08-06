@@ -5,19 +5,19 @@
 <h2>Some Commands you can use in this interpreter: </h2>
 <h3>tellme();</h3>
 <h5>for print/output somthing</h5>
-<h5>Example: **tellme("Hello World!!");**<br>output: Hello World!!</h5>
+<h5>Example: <b>tellme("Hello World!!");<b><br>output: Hello World!!</h5>
 
 <h3>say</h3>
 <h5>for declaring variables</h5>
-<h5>Example: **say myname="TwoT language";**<br>**tellme(myname);**<br>output: TwoT language</h5>
+<h5>Example: <b>say myname="TwoT language";<b><br><b>tellme(myname);<b><br>output: TwoT language</h5>
 
 <h3>say something = function(){}</h3>
 <h5>for Definition of functions</h5>
-<h5>Example:<br> **say fn = function(x){ x * 25 ;};**<br>fn(4)<br>output: 100</h5>
+<h5>Example:<br> <b>say fn = function(x){ x * 25 ;};<b><br>fn(4)<br>output: 100</h5>
 
 <h3>also you can use Dictionaries</h3>
 
-<h5>Example: say projects={"project1": "calculator", "project2": "TwoT language"};<br>projects["project2"]<br>output: TwoT language</h5>
+<h5>Example: <b>say projects={"project1": "calculator", "project2": "TwoT language"};<b><br><b>projects["project2"]<b><br>output: TwoT language</h5>
 
 <h1 align="center">Hi 👋, I'm <a href="https://github.com/arashPQ" target="blank">
 arash</a></h1>
