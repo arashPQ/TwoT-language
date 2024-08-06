@@ -6,7 +6,7 @@
 
 <h1 align="center">Hi 👋, I'm <a href="https://github.com/arashPQ" target="blank">
 arash</a></h1>
-<h3 align="center">A junior Software developer in &#127470 </h3>
+<h3 align="center">A junior Software developer in &#127479 </h3>
 
 
 - 🌱 I’m currently learning Rust Language
