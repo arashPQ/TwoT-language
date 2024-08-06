@@ -1,4 +1,4 @@
-<h3>TwoT is A Basic interpreter written by Rust Language</h3>
+<h3>TwoT is A Basic interpreter written with Rust Language</h3>
 
 <h5>you can run source code with "cargo run" and</h5>
 <h5>also you can run with "./target/debug/inter" in your command line</h5><br>
