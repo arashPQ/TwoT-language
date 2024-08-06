@@ -5,15 +5,15 @@
 <h2>Some Commands you can use in this interpreter: </h2>
 <h3>tellme();</h3>
 <h5>for print/output somthing</h5>
-<h5>Example: tellme("Hello World!!");<br>output: Hello World!!</h5>
+<h5>Example: **tellme("Hello World!!");**<br>output: Hello World!!</h5>
 
 <h3>say</h3>
 <h5>for declaring variables</h5>
-<h5>Example: say myname="TwoT language";<br>tellme(myname);<br>output: TwoT language</h5>
+<h5>Example: **say myname="TwoT language";**<br>**tellme(myname);**<br>output: TwoT language</h5>
 
-<h3>function(){}</h3>
+<h3>say something = function(){}</h3>
 <h5>for Definition of functions</h5>
-<h5>Example:<br> say fn = function(x){ x * 25 ;};<br>fn(4)<br>output: 100</h5>
+<h5>Example:<br> **say fn = function(x){ x * 25 ;};**<br>fn(4)<br>output: 100</h5>
 
 <h3>also you can use Dictionaries</h3>
 
