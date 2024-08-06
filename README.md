@@ -5,11 +5,11 @@
 <h2>Some Commands you can use in this interpreter: </h2>
 <h3>tellme();</h3>
 <h5>for print/output somthing</h5>
-<h5>Example: <b>tellme("Hello World!!");<b><br>output: Hello World!!</h5>
+<h5>Example:<br> <b>tellme("Hello World!!");<b><br>output: Hello World!!</h5>
 
 <h3>say</h3>
 <h5>for declaring variables</h5>
-<h5>Example: <b>say myname="TwoT language";<b><br><b>tellme(myname);<b><br>output: TwoT language</h5>
+<h5>Example:<br> <b>say myname="TwoT language";<b><br><b>tellme(myname);<b><br>output: TwoT language</h5>
 
 <h3>say something = function(){}</h3>
 <h5>for Definition of functions</h5>
@@ -17,7 +17,7 @@
 
 <h3>also you can use Dictionaries</h3>
 
-<h5>Example: <b>say projects={"project1": "calculator", "project2": "TwoT language"};<b><br><b>projects["project2"]<b><br>output: TwoT language</h5>
+<h5>Example:<br> <b>say projects={"project1": "calculator", "project2": "TwoT language"};<b><br><b>projects["project2"]<b><br>output: TwoT language</h5>
 
 <h1 align="center">Hi 👋, I'm <a href="https://github.com/arashPQ" target="blank">
 arash</a></h1>
