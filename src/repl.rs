@@ -42,7 +42,7 @@ fn print_parse_errors(mut stdout: &Stdout, errors: &Vec<String>) {
 "
     )
     .unwrap();
-    writeln!(stdout, "Oops! We ran into parser errors")
+    writeln!(stdout, "Oops! We have error into parser")
         .expect("error message info should be written to stdout");
     for error in errors {
         writeln!(stdout, "\t=> {error}").expect("error should be written to stdout");
