@@ -9,8 +9,8 @@
    
    ```ruby
    tellme("Hello World!!");
+   output: Hello World
   ```
-  <b><br>output: Hello World!!
 
 <h3>say</h3>
 <h5>for declaring variables</h5>
