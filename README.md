@@ -5,7 +5,7 @@
    ```ruby
    cargo run
 ```
-<h5>and also you can run in your command line</h5> 
+<h5>also you can run in your command line</h5> 
    
    ```ruby
    ./target/debug/inter
