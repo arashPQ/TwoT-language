@@ -1,7 +1,15 @@
 <h3>TwoT is A Basic interpreter written with Rust Language</h3>
 
-<h5>you can run source code with "cargo run" and</h5>
-<h5>also you can run with "./target/debug/inter" in your command line</h5><br>
+<h5>you can run source code with 
+   
+   ```ruby
+   cargo run
+```
+<h5>and also you can run in your command line</h5> 
+   
+   ```ruby
+   ./target/debug/inter
+```
 <h2>Some Commands you can use in this interpreter: </h2>
 <h3>tellme();</h3>
 <h5>for print/output somthing</h5>
