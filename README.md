@@ -20,11 +20,12 @@
       tellme(myname);
       output: TwoT language
 ```
+
+<h5>for Definition of functions</h5>
+
 ```ruby
       say something = function(){}
 ```
-
-<h5>for Definition of functions</h5>
 <h5>Example:</h5>
 
 ```ruby
