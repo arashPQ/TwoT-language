@@ -30,7 +30,8 @@
 <h5>Example:</h5>
 
 ```ruby
-     say fn = function(x){ x * 25 ;};<b><br>fn(4)
+      say fn = function(x){ x * 25 ;};
+      fn(4)
       output: 100
 ```
 
