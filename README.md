@@ -14,19 +14,34 @@
 <h3>say</h3>
 <h5>for declaring variables</h5>
 <h5>Example:</h5>
-```rubt
+
+```ruby
       say myname="TwoT language";
       tellme(myname);
       output: TwoT language
 ```
+```ruby
+      say something = function(){}
+```
 
-<h3>say something = function(){}</h3>
 <h5>for Definition of functions</h5>
-<h5>Example:<br> <b>say fn = function(x){ x * 25 ;};<b><br>fn(4)<br>output: 100</h5>
+<h5>Example:</h5>
+
+```ruby
+     say fn = function(x){ x * 25 ;};<b><br>fn(4)
+      output: 100
+```
 
 <h3>also you can use Dictionaries</h3>
 
-<h5>Example:<br> <b>say projects={"project1": "calculator", "project2": "TwoT language"};<b><br><b>projects["project2"]<b><br>output: TwoT language</h5>
+<h5>Example:</h5>
+
+```ruby
+     say projects={"project1": "calculator", "project2": "TwoT language"};
+      projects["project2"]
+      output: TwoT language
+```
+
 
 <h1 align="center">Hi 👋, I'm <a href="https://github.com/arashPQ" target="blank">
 arash</a></h1>
