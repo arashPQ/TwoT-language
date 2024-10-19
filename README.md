@@ -30,7 +30,7 @@
       output: TwoT language
 ```
 
-<h3>for Definition of</h3> <2>functions</h2>
+<h3>for Definition of</h3> <h2>functions</h2>
 
 ```ruby
       say something = function(){}
@@ -43,7 +43,7 @@
       output: 100
 ```
 
-<h3>also you can use</h3> <2>Dictionaries</h2>
+<h3>also you can use</h3> <h2>Dictionaries</h2>
 
 <h5>Example:</h5>
 
