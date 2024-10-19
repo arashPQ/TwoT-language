@@ -5,7 +5,11 @@
 <h2>Some Commands you can use in this interpreter: </h2>
 <h3>tellme();</h3>
 <h5>for print/output somthing</h5>
-<h5>Example:<br> <b>tellme("Hello World!!");<b><br>output: Hello World!!</h5>
+<h5>Example:</h5>
+  ```ruby
+    tellme("Hello World!!");
+  ```
+  <b><br>output: Hello World!!
 
 <h3>say</h3>
 <h5>for declaring variables</h5>
