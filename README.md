@@ -13,7 +13,12 @@
 
 <h3>say</h3>
 <h5>for declaring variables</h5>
-<h5>Example:<br> <b>say myname="TwoT language";<b><br><b>tellme(myname);<b><br>output: TwoT language</h5>
+<h5>Example:</h5>
+```rubt
+      say myname="TwoT language";
+      tellme(myname);
+      output: TwoT language
+```
 
 <h3>say something = function(){}</h3>
 <h5>for Definition of functions</h5>
