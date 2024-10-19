@@ -6,8 +6,8 @@
 <h3>tellme();</h3>
 <h5>for print/output somthing</h5>
 <h5>Example:</h5>
-  ```ruby
-    tellme("Hello World!!");
+  ```
+  tellme("Hello World!!");
   ```
   <b><br>output: Hello World!!
 
