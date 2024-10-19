@@ -11,7 +11,7 @@
    ./target/debug/inter
 ```
 <h2>Some Commands you can use in this interpreter: </h2>
-<h3>tellme();</h3>
+<h2>tellme();</h2>
 <h5>for print/output somthing</h5>
 <h5>Example: </h5>
    
@@ -20,7 +20,7 @@
    output: Hello World
   ```
 
-<h3>say</h3>
+<h2>say</h2>
 <h5>for declaring variables</h5>
 <h5>Example:</h5>
 
@@ -30,7 +30,7 @@
       output: TwoT language
 ```
 
-<h5>for Definition of functions</h5>
+<h3>for Definition of</h3> <2>functions</h2>
 
 ```ruby
       say something = function(){}
@@ -43,7 +43,7 @@
       output: 100
 ```
 
-<h3>also you can use Dictionaries</h3>
+<h3>also you can use</h3> <2>Dictionaries</h2>
 
 <h5>Example:</h5>
 
