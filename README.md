@@ -40,7 +40,7 @@
 <h5>Example:</h5>
 
 ```ruby
-     say projects={"project1": "calculator", "project2": "TwoT language"};
+      say projects={"project1": "calculator", "project2": "TwoT language"};
       projects["project2"]
       output: TwoT language
 ```
